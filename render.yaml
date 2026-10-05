@@ -1,0 +1,25 @@
+# Render Blueprint: Dashboard > New > Blueprint, then pick this repo.
+services:
+  - type: web
+    name: kaasupathayam-api
+    runtime: python
+    plan: free
+    region: singapore # keep close to the Neon database region
+    branch: main
+    autoDeployTrigger: checksPass # wait for GitHub Actions CI to go green
+    buildCommand: >-
+      pip install uv &&
+      uv export --frozen --no-dev --no-hashes -o requirements.txt &&
+      pip install -r requirements.txt
+    # Free instances have no pre-deploy step, so migrations run at startup (idempotent).
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: KAASU_DATABASE_URL # Neon connection string, as copied from the Neon console
+        sync: false
+      - key: KAASU_JWT_SECRET
+        generateValue: true
+      - key: KAASU_GOOGLE_CLIENT_IDS # ["<Google web client id>"]
+        sync: false
+      - key: KAASU_CORS_ORIGINS # ["https://<your site>.onrender.com"]
+        sync: false
