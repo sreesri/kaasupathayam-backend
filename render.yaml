@@ -19,7 +19,7 @@ services:
         sync: false
       - key: KAASU_JWT_SECRET
         generateValue: true
-      - key: KAASU_GOOGLE_CLIENT_IDS # ["<Google web client id>"]
+      - key: KAASU_GOOGLE_CLIENT_IDS # <Google web client id> (comma-separate if several)
         sync: false
-      - key: KAASU_CORS_ORIGINS # ["https://<your site>.onrender.com"]
+      - key: KAASU_CORS_ORIGINS # https://<your site>.onrender.com
         sync: false

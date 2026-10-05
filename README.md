@@ -35,8 +35,10 @@ One-time setup:
 1. **Neon:** create a project (region: AWS Singapore, to match Render) and copy the connection string. It can be pasted as-is; the `postgresql://` prefix is converted for psycopg automatically.
 2. **Render:** go to New → Blueprint, select this repo, and fill in:
    - `KAASU_DATABASE_URL`: the Neon connection string.
-   - `KAASU_GOOGLE_CLIENT_IDS`: `["<Google web client id>"]`.
-   - `KAASU_CORS_ORIGINS`: `["https://<website>.onrender.com"]`.
+   - `KAASU_GOOGLE_CLIENT_IDS`: the Google web client ID.
+   - `KAASU_CORS_ORIGINS`: `https://<website>.onrender.com`.
+
+   List settings accept a single value, comma-separated values, or a JSON list.
 
    `KAASU_JWT_SECRET` is generated for you.
 3. Check `https://<service>.onrender.com/health`.
