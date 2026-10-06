@@ -79,3 +79,44 @@ def test_scope_privacy(client, household):
 
     owners_txn = client.get("/transactions", headers=owner).json()[0]["id"]
     assert client.delete(f"/transactions/{owners_txn}", headers=member).status_code == 403
+
+
+def test_account_edit_and_delete(client, household):
+    owner, member = household
+    bank = make_account(client, owner, "Bank", opening="100")
+    card = make_account(client, owner, "Card", type="credit_card")
+    unused = make_account(client, owner, "Old wallet", type="wallet")
+
+    r = client.patch(
+        f"/accounts/{card}",
+        json={"name": "HDFC Card", "opening_balance": "-500", "credit_limit": "50000"},
+        headers=owner,
+    )
+    assert r.status_code == 200, r.text
+    assert (r.json()["name"], r.json()["balance"], r.json()["credit_limit"]) == (
+        "HDFC Card",
+        "-500.00",
+        "50000.00",
+    )
+    # Only the owner can edit or delete.
+    assert client.patch(f"/accounts/{card}", json={"name": "x"}, headers=member).status_code == 403
+    assert client.delete(f"/accounts/{unused}", headers=member).status_code == 403
+
+    # An account used by a transfer (either side) can't be deleted, only archived.
+    client.post(
+        "/transactions",
+        json={
+            "type": "transfer",
+            "amount": "50",
+            "account_id": bank,
+            "to_account_id": card,
+            "occurred_on": "2026-01-05",
+        },
+        headers=owner,
+    )
+    assert client.delete(f"/accounts/{card}", headers=owner).status_code == 409
+    assert client.delete(f"/accounts/{bank}", headers=owner).status_code == 409
+
+    assert client.delete(f"/accounts/{unused}", headers=owner).status_code == 204
+    names = [a["name"] for a in client.get("/accounts", headers=owner).json()]
+    assert names == ["Bank", "HDFC Card"]

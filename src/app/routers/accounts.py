@@ -43,6 +43,7 @@ def create_account(body: AccountCreate, user: Member, db: DB) -> AccountOut:
     account = Account(household_id=user.household_id, owner_id=user.id, **body.model_dump())
     db.add(account)
     db.commit()
+    db.refresh(account)  # return amounts as stored (2 decimal places), not as sent
     return _out(account, account.opening_balance)
 
 
@@ -52,6 +53,7 @@ def update_account(account_id: uuid.UUID, body: AccountUpdate, user: Member, db:
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(account, field, value)
     db.commit()
+    db.refresh(account)
     return _out(account, balances(db, [account])[account.id])
 
 
