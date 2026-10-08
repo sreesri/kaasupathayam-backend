@@ -1,4 +1,4 @@
-"""Validation and balance rules shared by one-off and recurring transactions."""
+"""Transaction validation and account balance rules."""
 
 import uuid
 from collections import defaultdict

@@ -9,7 +9,6 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
-    Integer,
     Numeric,
     String,
     UniqueConstraint,
@@ -53,13 +52,6 @@ class TxnType(StrEnum):
     INCOME = "income"
     EXPENSE = "expense"
     TRANSFER = "transfer"
-
-
-class Frequency(StrEnum):
-    DAILY = "daily"
-    WEEKLY = "weekly"
-    MONTHLY = "monthly"
-    YEARLY = "yearly"
 
 
 class Household(Base):
@@ -116,28 +108,6 @@ class Category(Base):
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
-class RecurringTransaction(Base):
-    __tablename__ = "recurring_transactions"
-
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    household_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("households.id"), index=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"))
-    account_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("accounts.id"))
-    to_account_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("accounts.id"))
-    category_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("categories.id"))
-    type: Mapped[TxnType] = mapped_column(_enum(TxnType))
-    amount: Mapped[Decimal] = mapped_column(Money)
-    note: Mapped[str | None] = mapped_column(String(500))
-    frequency: Mapped[Frequency] = mapped_column(_enum(Frequency))
-    interval: Mapped[int] = mapped_column(Integer, default=1)
-    start_date: Mapped[date] = mapped_column(Date)
-    end_date: Mapped[date | None] = mapped_column(Date)
-    # Occurrences already turned into transactions; next due date = start + occurrences * step.
-    occurrences: Mapped[int] = mapped_column(Integer, default=0)
-    next_date: Mapped[date | None] = mapped_column(Date)
-    active: Mapped[bool] = mapped_column(Boolean, default=True)
-
-
 class Transaction(Base):
     __tablename__ = "transactions"
     __table_args__ = (Index("ix_transactions_household_date", "household_id", "occurred_on"),)
@@ -154,9 +124,6 @@ class Transaction(Base):
     amount: Mapped[Decimal] = mapped_column(Money)
     occurred_on: Mapped[date] = mapped_column(Date)
     note: Mapped[str | None] = mapped_column(String(500))
-    recurring_id: Mapped[uuid.UUID | None] = mapped_column(
-        ForeignKey("recurring_transactions.id", ondelete="SET NULL")
-    )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
 

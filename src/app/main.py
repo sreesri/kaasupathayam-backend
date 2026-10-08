@@ -8,7 +8,6 @@ from app.routers import (
     budgets,
     categories,
     households,
-    recurring,
     reports,
     transactions,
 )
@@ -23,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for module in (auth, households, accounts, categories, transactions, recurring, budgets, reports):
+for module in (auth, households, accounts, categories, transactions, budgets, reports):
     app.include_router(module.router)
 
 

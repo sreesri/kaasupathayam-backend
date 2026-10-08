@@ -6,7 +6,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from app.models import AccountType, CategoryKind, Frequency, Role, TxnType
+from app.models import AccountType, CategoryKind, Role, TxnType
 
 PositiveMoney = Annotated[Decimal, Field(gt=0, max_digits=14, decimal_places=2)]
 Money = Annotated[Decimal, Field(max_digits=14, decimal_places=2)]
@@ -155,7 +155,6 @@ class TransactionOut(ORM):
     category_id: uuid.UUID | None
     occurred_on: date
     note: str | None
-    recurring_id: uuid.UUID | None
 
 
 # --- budgets ---
@@ -182,47 +181,6 @@ class BudgetOut(ORM):
 class BudgetStatusOut(BudgetOut):
     spent: Decimal
     remaining: Decimal
-
-
-# --- recurring ---
-
-
-class RecurringCreate(BaseModel):
-    type: TxnType
-    amount: PositiveMoney
-    account_id: uuid.UUID
-    to_account_id: uuid.UUID | None = None
-    category_id: uuid.UUID | None = None
-    note: Note | None = None
-    frequency: Frequency
-    interval: Annotated[int, Field(ge=1, le=365)] = 1
-    start_date: date
-    end_date: date | None = None
-
-
-class RecurringUpdate(BaseModel):
-    amount: PositiveMoney | None = None
-    category_id: uuid.UUID | None = None
-    note: Note | None = None
-    end_date: date | None = None
-    active: bool | None = None
-
-
-class RecurringOut(ORM):
-    id: uuid.UUID
-    user_id: uuid.UUID
-    type: TxnType
-    amount: Decimal
-    account_id: uuid.UUID
-    to_account_id: uuid.UUID | None
-    category_id: uuid.UUID | None
-    note: str | None
-    frequency: Frequency
-    interval: int
-    start_date: date
-    end_date: date | None
-    next_date: date | None
-    active: bool
 
 
 # --- reports ---

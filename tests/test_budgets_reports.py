@@ -1,34 +1,6 @@
 from datetime import date
 
-from dateutil.relativedelta import relativedelta
-
 from tests.conftest import category_id, make_account
-
-
-def test_recurring_backfills_and_keeps_month_end(client, household):
-    owner, _ = household
-    bank = make_account(client, owner)
-    rent = category_id(client, owner, "Rent")
-    start = date.today().replace(day=1) - relativedelta(months=2)
-    r = client.post(
-        "/recurring",
-        json={
-            "type": "expense",
-            "amount": "100",
-            "account_id": bank,
-            "category_id": rent,
-            "frequency": "monthly",
-            "start_date": start.isoformat(),
-        },
-        headers=owner,
-    )
-    assert r.status_code == 201, r.text
-    assert r.json()["next_date"] == (start + relativedelta(months=3)).isoformat()
-
-    txns = client.get("/transactions", headers=owner).json()
-    assert len(txns) == 3 and all(t["recurring_id"] for t in txns)
-    # A second read must not duplicate occurrences.
-    assert len(client.get("/transactions", headers=owner).json()) == 3
 
 
 def test_budget_status_personal_vs_household(client, household):
