@@ -105,6 +105,10 @@ class Category(Base):
     household_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("households.id"), index=True)
     name: Mapped[str] = mapped_column(String(50))
     kind: Mapped[CategoryKind] = mapped_column(_enum(CategoryKind))
+    # Ionicons glyph name shown next to the category in the app.
+    icon: Mapped[str] = mapped_column(String(40), default="pricetag-outline")
+    # Removed categories are archived, not deleted: past transactions keep pointing at them,
+    # but they can't be picked for new ones.
     archived: Mapped[bool] = mapped_column(Boolean, default=False)
 
 

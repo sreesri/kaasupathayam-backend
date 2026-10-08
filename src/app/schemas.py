@@ -104,15 +104,21 @@ class AccountOut(ORM):
 # --- categories ---
 
 
+# An Ionicons glyph name, e.g. "cart-outline".
+Icon = Annotated[str, StringConstraints(pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$", max_length=40)]
+
+
 class CategoryCreate(BaseModel):
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
     kind: CategoryKind
+    icon: Icon = "pricetag-outline"
 
 
 class CategoryUpdate(BaseModel):
     name: (
         Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)] | None
     ) = None
+    icon: Icon | None = None
     archived: bool | None = None
 
 
@@ -120,6 +126,7 @@ class CategoryOut(ORM):
     id: uuid.UUID
     name: str
     kind: CategoryKind
+    icon: str
     archived: bool
 
 

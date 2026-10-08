@@ -29,6 +29,7 @@ def validate_entry(
     account_id: uuid.UUID,
     to_account_id: uuid.UUID | None,
     category_id: uuid.UUID | None,
+    keep_category_id: uuid.UUID | None = None,
 ) -> None:
     """Members log against their own accounts. Transfers may go to any household account
     (e.g. paying a spouse's credit card bill)."""
@@ -55,6 +56,9 @@ def validate_entry(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Category not found")
     if category.kind != CategoryKind(type.value):
         raise _bad(f"Category '{category.name}' is not an {type.value} category")
+    # Removed categories stay on past transactions (editing those is fine) but can't be chosen.
+    if category.archived and category.id != keep_category_id:
+        raise _bad(f"'{category.name}' was removed; choose another category")
 
 
 def balances(db: Session, accounts: list[Account]) -> dict[uuid.UUID, Decimal]:

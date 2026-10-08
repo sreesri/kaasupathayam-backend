@@ -1,7 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 
 from app.deps import DB, Member
@@ -33,6 +33,21 @@ def list_categories(
 
 @router.post("", response_model=CategoryOut, status_code=status.HTTP_201_CREATED)
 def create_category(body: CategoryCreate, user: Member, db: DB) -> Category:
+    existing = db.scalar(
+        select(Category).where(
+            Category.household_id == user.household_id,
+            Category.kind == body.kind,
+            func.lower(Category.name) == body.name.lower(),
+        )
+    )
+    if existing is not None and not existing.archived:
+        raise HTTPException(status.HTTP_409_CONFLICT, "A category with that name exists")
+    if existing is not None:
+        # Re-adding a removed category brings it back, so old and new transactions share it.
+        existing.archived = False
+        existing.icon = body.icon
+        db.commit()
+        return existing
     category = Category(household_id=user.household_id, **body.model_dump())
     db.add(category)
     _commit_unique(db)

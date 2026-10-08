@@ -4,32 +4,12 @@ import string
 from fastapi import APIRouter, HTTPException, status
 from sqlalchemy import select
 
+from app.category_icons import DEFAULT_CATEGORIES
 from app.deps import DB, CurrentUser, Member
-from app.models import Category, CategoryKind, Household, Role, User
+from app.models import Category, Household, Role, User
 from app.schemas import HouseholdCreate, HouseholdJoin, HouseholdOut
 
 router = APIRouter(prefix="/households", tags=["households"])
-
-DEFAULT_CATEGORIES = {
-    CategoryKind.EXPENSE: [
-        "Groceries",
-        "Dining",
-        "Rent",
-        "Utilities",
-        "Transport",
-        "Fuel",
-        "Shopping",
-        "Health",
-        "Education",
-        "Entertainment",
-        "Travel",
-        "Subscriptions",
-        "Insurance",
-        "Gifts",
-        "Other",
-    ],
-    CategoryKind.INCOME: ["Salary", "Business", "Interest", "Gifts", "Refunds", "Other"],
-}
 
 
 def _invite_code() -> str:
@@ -48,8 +28,11 @@ def create_household(body: HouseholdCreate, user: CurrentUser, db: DB) -> Househ
     household = Household(name=body.name, currency=body.currency, invite_code=_invite_code())
     db.add(household)
     db.flush()
-    for kind, names in DEFAULT_CATEGORIES.items():
-        db.add_all(Category(household_id=household.id, name=n, kind=kind) for n in names)
+    for kind, icons in DEFAULT_CATEGORIES.items():
+        db.add_all(
+            Category(household_id=household.id, name=name, kind=kind, icon=icon)
+            for name, icon in icons.items()
+        )
     user.household_id, user.role = household.id, Role.OWNER
     db.commit()
     db.refresh(household)

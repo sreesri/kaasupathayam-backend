@@ -79,9 +79,18 @@ def update_transaction(
     txn_id: uuid.UUID, body: TransactionUpdate, user: Member, db: DB
 ) -> Transaction:
     txn = _own_transaction(db, user, txn_id)
+    original_category = txn.category_id
     for field, value in body.model_dump(exclude_unset=True).items():
         setattr(txn, field, value)
-    validate_entry(db, user, txn.type, txn.account_id, txn.to_account_id, txn.category_id)
+    validate_entry(
+        db,
+        user,
+        txn.type,
+        txn.account_id,
+        txn.to_account_id,
+        txn.category_id,
+        keep_category_id=original_category,
+    )
     db.commit()
     return txn
 
