@@ -125,19 +125,3 @@ class Transaction(Base):
     occurred_on: Mapped[date] = mapped_column(Date)
     note: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
-
-
-class Budget(Base):
-    """Monthly spending limit for an expense category.
-
-    user_id set = personal budget (only that user's spending counts);
-    user_id null = household budget (everyone's spending counts).
-    """
-
-    __tablename__ = "budgets"
-
-    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    household_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("households.id"), index=True)
-    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"))
-    category_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("categories.id"))
-    amount: Mapped[Decimal] = mapped_column(Money)

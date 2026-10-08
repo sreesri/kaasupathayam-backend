@@ -157,32 +157,6 @@ class TransactionOut(ORM):
     note: str | None
 
 
-# --- budgets ---
-
-
-class BudgetCreate(BaseModel):
-    category_id: uuid.UUID
-    amount: PositiveMoney
-    # True = household budget counting every member's spending.
-    shared: bool = False
-
-
-class BudgetUpdate(BaseModel):
-    amount: PositiveMoney
-
-
-class BudgetOut(ORM):
-    id: uuid.UUID
-    category_id: uuid.UUID
-    user_id: uuid.UUID | None
-    amount: Decimal
-
-
-class BudgetStatusOut(BudgetOut):
-    spent: Decimal
-    remaining: Decimal
-
-
 # --- reports ---
 
 

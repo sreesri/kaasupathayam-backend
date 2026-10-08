@@ -5,7 +5,6 @@ from app.config import settings
 from app.routers import (
     accounts,
     auth,
-    budgets,
     categories,
     households,
     reports,
@@ -22,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for module in (auth, households, accounts, categories, transactions, budgets, reports):
+for module in (auth, households, accounts, categories, transactions, reports):
     app.include_router(module.router)
 
 
