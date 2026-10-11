@@ -109,3 +109,21 @@ def test_removed_category_only_affects_new_transactions(client, household):
         ).status_code
         == 422
     )
+
+
+def test_new_households_get_the_pruned_defaults(client, household):
+    owner, _ = household
+    cats = client.get("/categories", headers=owner).json()
+    expense = sorted(c["name"] for c in cats if c["kind"] == "expense")
+    income = sorted(c["name"] for c in cats if c["kind"] == "income")
+    assert expense == [
+        "Dining",
+        "Entertainment",
+        "Fuel",
+        "Groceries",
+        "Health",
+        "Rent",
+        "Shopping",
+        "Utilities",
+    ]
+    assert income == ["Interest", "Refunds", "Salary"]
